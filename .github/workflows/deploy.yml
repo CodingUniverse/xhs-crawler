@@ -21,7 +21,7 @@ jobs:
           password: ${{ secrets.VULTR_PASSWORD }}
           port: 22
           script: |
-            cd /home/user/crawler
+            cd /var/www/myproject
             
             git pull origin master
             
