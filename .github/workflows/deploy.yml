@@ -3,7 +3,7 @@ name: Deploy to Server
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   deploy:
@@ -23,7 +23,7 @@ jobs:
           script: |
             cd /home/user/crawler
             
-            git pull origin main
+            git pull origin master
             
             cd infra
             docker compose down
