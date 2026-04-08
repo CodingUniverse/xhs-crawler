@@ -39,9 +39,15 @@ def clean_url(url: str, platform: str) -> str:
             params_to_keep.append(('note', query_params['note'][0]))
         if 'user_id' in query_params:
             params_to_keep.append(('user_id', query_params['user_id'][0]))
+        for param in ['channel', 'xsec_source', 'xsec_token', 'xsecappid']:
+            if param in query_params:
+                del query_params[param]
     elif platform == "zhihu":
         if 'id' in query_params:
             params_to_keep.append(('id', query_params['id'][0]))
+        for param in ['utm_source', 'utm_medium']:
+            if param in query_params:
+                del query_params[param]
     
     new_query = '&'.join(f"{k}={v}" for k, v in params_to_keep)
     clean_url = f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
@@ -51,6 +57,34 @@ def clean_url(url: str, platform: str) -> str:
 
 
 def parse_xhs_url(url: str) -> dict:
+    from urllib.parse import unquote
+    
+    url = url.strip()
+    
+    if 'xhslink.com' in url or 'xhs.cn' in url:
+        parsed = urlparse(url)
+        query_params = parse_qs(parsed.query)
+        
+        target_url = None
+        for param in ['target', 'url', 'redirect', 'u']:
+            if param in query_params:
+                target_url = query_params[param][0]
+                break
+        
+        if target_url and ('xiaohongshu' in target_url or 'xhs.cn' in target_url):
+            url = unquote(target_url)
+        elif target_url:
+            return {
+                "platform": "xiaohongshu",
+                "type": "short_url",
+                "id": url
+            }
+    
+    if not url.startswith('http://') and not url.startswith('https://'):
+        extracted_urls = re.findall(r'https?://[^\s]+', url)
+        if extracted_urls:
+            url = extracted_urls[0]
+    
     url = clean_url(url, "xiaohongshu")
     
     note_patterns = [
@@ -58,6 +92,7 @@ def parse_xhs_url(url: str) -> dict:
         r'xiaohongshu\.com/discovery/(\w+)',
         r'xiaohongshu\.com/explore/(\w+)',
         r'xiaohongshu\.com/detail/(\w+)',
+        r'xiaohongshu\.com/express/(\w+)',
         r'xiaohongshu\.com/.*?note=(\w+)',
     ]
     
@@ -95,12 +130,24 @@ def parse_xhs_url(url: str) -> dict:
 
 
 def parse_zhihu_url(url: str) -> dict:
+    from urllib.parse import unquote
+    
+    url = url.strip()
+    
+    if not url.startswith('http://') and not url.startswith('https://'):
+        extracted_urls = re.findall(r'https?://[^\s]+', url)
+        if extracted_urls:
+            url = extracted_urls[0]
+    
     url = clean_url(url, "zhihu")
     
     article_patterns = [
-        r'zhihu\.com/answer/(\w+)',
-        r'zhihu\.com/api/v4/articles/(\w+)',
-        r'zhihu\.com/.*?id=(\w+)',
+        r'zhihu\.com/answer/(\d+)',
+        r'zhihu\.com/api/v4/articles/(\d+)',
+        r'zhihu\.com/p/(\d+)',
+        r'zhihu\.com/question/\d+/answer/(\d+)',
+        r'zhihu\.com/zhuanlan/([a-zA-Z0-9_-]+)/(\d+)',
+        r'zhihu\.com/.*?id=(\d+)',
     ]
     
     author_patterns = [
@@ -163,9 +210,9 @@ async def scrape_instant(
         raise HTTPException(status_code=400, detail=str(e))
     
     platform = parsed["platform"]
-    cookies = await load_account_cookies_by_platform(db, platform)
+    cookies, account_id = await load_account_cookies_by_platform(db, platform)
     
-    async with PlatformScraper(cookies) as scraper:
+    async with PlatformScraper(cookies, account_id=account_id, db=db) as scraper:
         try:
             if platform == "xiaohongshu":
                 if parsed["type"] == "note":
@@ -189,7 +236,27 @@ async def scrape_instant(
                         author_name=result.get("author_name"),
                         metrics=result.get("metrics"),
                     )
+                
+                elif parsed["type"] == "short_url":
+                    result = await scraper.scrape_xhs_from_short_url(parsed["id"])
                     
+                    if not result:
+                        raise HTTPException(status_code=404, detail="Could not resolve short URL")
+                    
+                    content, is_new = await upsert_content(
+                        db, PlatformEnum.XHS, result["platform_post_id"], result
+                    )
+                    
+                    return ScrapeInstantResponse(
+                        success=True,
+                        message="Note scraped successfully from short URL",
+                        platform="xiaohongshu",
+                        platform_post_id=result["platform_post_id"],
+                        title=result.get("title"),
+                        author_name=result.get("author_name"),
+                        metrics=result.get("metrics"),
+                    )
+                
                 elif parsed["type"] == "author":
                     results = await scraper.scrape_xhs_author(parsed["id"], depth=1)
                     

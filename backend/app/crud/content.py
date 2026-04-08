@@ -31,6 +31,8 @@ async def upsert_content(
             update_data["content_text"] = data["content_text"]
         if data.get("media_urls"):
             update_data["media_urls"] = data["media_urls"]
+        if data.get("source_url"):
+            update_data["source_url"] = data["source_url"]
 
         for field, value in update_data.items():
             if value is not None:
@@ -43,6 +45,7 @@ async def upsert_content(
     new_content = ContentAsset(
         platform_post_id=platform_post_id,
         platform=platform,
+        source_url=data.get("source_url"),
         title=data.get("title"),
         content_text=data.get("content_text"),
         author_name=data.get("author_name"),

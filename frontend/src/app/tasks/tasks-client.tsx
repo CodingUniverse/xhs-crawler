@@ -67,21 +67,21 @@ export function TasksClient({ initialTasks }: TasksClientProps) {
   }
 
   const statusColors: Record<string, string> = {
-    running: "text-success",
-    paused: "text-warning",
-    stopped: "text-destructive",
+    running: "text-[#16a34a]",
+    paused: "text-[#d97706]",
+    stopped: "text-[#dc2626]",
   }
 
   return (
     <div className="p-8">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Scrape Tasks</h1>
-          <p className="text-muted-foreground">Create and manage scraping jobs</p>
+          <h1 className="text-2xl font-semibold text-[#1a1a1a] tracking-tight mb-1">Scrape Tasks</h1>
+          <p className="text-[#737373] text-sm">Create and manage scraping jobs</p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2"
+          className="px-4 py-2 bg-[#2563eb] text-white rounded-lg hover:bg-[#1d4ed8] transition-all duration-200 flex items-center gap-2 text-sm font-medium shadow-sm"
         >
           <Plus className="w-4 h-4" />
           Create Task
@@ -89,40 +89,40 @@ export function TasksClient({ initialTasks }: TasksClientProps) {
       </div>
 
       {tasks.length === 0 ? (
-        <div className="bg-card-bg border border-card-border rounded-lg p-12 text-center">
-          <p className="text-muted-foreground mb-4">No tasks yet</p>
+        <div className="bg-white border border-[#e5e5e5] rounded-lg p-12 text-center shadow-sm">
+          <p className="text-[#737373] mb-4">No tasks yet</p>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="text-primary hover:underline"
+            className="text-[#2563eb] hover:underline text-sm font-medium"
           >
             Create your first task
           </button>
         </div>
       ) : (
-        <div className="bg-card-bg border border-card-border rounded-lg overflow-hidden">
+        <div className="bg-white border border-[#e5e5e5] rounded-lg overflow-hidden shadow-sm">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-card-border">
-                <th className="text-left p-4 font-medium">Platform</th>
-                <th className="text-left p-4 font-medium">Type</th>
-                <th className="text-left p-4 font-medium">Target</th>
-                <th className="text-left p-4 font-medium">Frequency</th>
-                <th className="text-left p-4 font-medium">Status</th>
-                <th className="text-left p-4 font-medium">Last Run</th>
-                <th className="text-left p-4 font-medium">Actions</th>
+              <tr className="border-b border-[#e5e5e5] bg-[#fafafa]">
+                <th className="text-left p-4 font-medium text-[#525252] text-sm">Platform</th>
+                <th className="text-left p-4 font-medium text-[#525252] text-sm">Type</th>
+                <th className="text-left p-4 font-medium text-[#525252] text-sm">Target</th>
+                <th className="text-left p-4 font-medium text-[#525252] text-sm">Frequency</th>
+                <th className="text-left p-4 font-medium text-[#525252] text-sm">Status</th>
+                <th className="text-left p-4 font-medium text-[#525252] text-sm">Last Run</th>
+                <th className="text-left p-4 font-medium text-[#525252] text-sm">Actions</th>
               </tr>
             </thead>
             <tbody>
               {tasks.map((task) => (
-                <tr key={task.id} className="border-b border-card-border last:border-0">
-                  <td className="p-4">{platformLabels[task.platform]}</td>
-                  <td className="p-4">{taskTypeLabels[task.task_type]}</td>
-                  <td className="p-4 font-mono text-sm max-w-xs truncate">{task.target_value}</td>
-                  <td className="p-4 font-mono text-sm">{task.frequency}</td>
+                <tr key={task.id} className="border-b border-[#e5e5e5] last:border-0 hover:bg-[#fafafa]">
+                  <td className="p-4 text-[#1a1a1a] text-sm">{platformLabels[task.platform]}</td>
+                  <td className="p-4 text-[#1a1a1a] text-sm">{taskTypeLabels[task.task_type]}</td>
+                  <td className="p-4 font-mono text-sm max-w-xs truncate text-[#1a1a1a]">{task.target_value}</td>
+                  <td className="p-4 font-mono text-sm text-[#525252]">{task.frequency}</td>
                   <td className="p-4">
                     <span className={statusColors[task.status]}>{task.status}</span>
                   </td>
-                  <td className="p-4 text-muted-foreground text-sm">
+                  <td className="p-4 text-[#737373] text-sm">
                     <span suppressHydrationWarning>
                       {task.last_run_time 
                         ? new Date(task.last_run_time).toLocaleString() 
@@ -130,33 +130,33 @@ export function TasksClient({ initialTasks }: TasksClientProps) {
                     </span>
                   </td>
                   <td className="p-4">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
                       <button
                         onClick={() => handleToggle(task.id)}
-                        className="p-2 hover:bg-sidebar-border rounded transition-colors"
+                        className="p-2 hover:bg-[#f5f5f5] rounded transition-all duration-200"
                         title={task.status === "running" ? "Pause" : "Run"}
                       >
                         {task.status === "running" ? (
-                          <Pause className="w-4 h-4" />
+                          <Pause className="w-4 h-4 text-[#525252]" />
                         ) : (
-                          <Play className="w-4 h-4" />
+                          <Play className="w-4 h-4 text-[#525252]" />
                         )}
                       </button>
                       <button
                         onClick={() => handleExecute(task.id)}
                         disabled={executingTaskId === task.id}
-                        className="p-2 hover:bg-sidebar-border rounded transition-colors disabled:opacity-50"
+                        className="p-2 hover:bg-[#f5f5f5] rounded transition-all duration-200 disabled:opacity-50"
                         title="Execute now"
                       >
                         {executingTaskId === task.id ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <Loader2 className="w-4 h-4 animate-spin text-[#2563eb]" />
                         ) : (
-                          <Play className="w-4 h-4" />
+                          <Play className="w-4 h-4 text-[#2563eb]" />
                         )}
                       </button>
                       <button
                         onClick={() => handleDelete(task.id)}
-                        className="p-2 hover:bg-sidebar-border rounded transition-colors text-destructive"
+                        className="p-2 hover:bg-[#f5f5f5] rounded transition-all duration-200 text-[#dc2626]"
                         title="Delete"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -224,23 +224,23 @@ function CreateTaskModal({ onClose, onSuccess }: CreateTaskModalProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       
-      <div className="relative bg-card-bg border border-card-border rounded-lg w-[500px] p-6">
+      <div className="relative bg-white border border-[#e5e5e5] rounded-lg w-[500px] p-6 shadow-xl">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-1 hover:bg-sidebar-border rounded"
+          className="absolute top-4 right-4 p-1 hover:bg-[#f5f5f5] rounded transition-all duration-200"
         >
-          <X className="w-5 h-5" />
+          <X className="w-5 h-5 text-[#737373]" />
         </button>
 
-        <h2 className="text-xl font-bold mb-6">Create New Task</h2>
+        <h2 className="text-lg font-semibold text-[#1a1a1a] mb-5">Create New Task</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">Platform</label>
+            <label className="block text-sm font-medium text-[#525252] mb-2">Platform</label>
             <select
               value={platform}
               onChange={(e) => setPlatform(e.target.value)}
-              className="w-full px-3 py-2 bg-background border border-card-border rounded-lg"
+              className="w-full px-3 py-2 bg-white border border-[#e5e5e5] rounded-lg text-[#1a1a1a] text-sm focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent"
               required
             >
               <option value="xiaohongshu">小红书</option>
@@ -251,11 +251,11 @@ function CreateTaskModal({ onClose, onSuccess }: CreateTaskModalProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Task Type</label>
+            <label className="block text-sm font-medium text-[#525252] mb-2">Task Type</label>
             <select
               value={taskType}
               onChange={(e) => setTaskType(e.target.value)}
-              className="w-full px-3 py-2 bg-background border border-card-border rounded-lg"
+              className="w-full px-3 py-2 bg-white border border-[#e5e5e5] rounded-lg text-[#1a1a1a] text-sm focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent"
               required
             >
               <option value="author">Author (Author ID/URL)</option>
@@ -264,7 +264,7 @@ function CreateTaskModal({ onClose, onSuccess }: CreateTaskModalProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">
+            <label className="block text-sm font-medium text-[#525252] mb-2">
               {taskType === "author" ? "Author ID / Homepage URL" : "Keyword"}
             </label>
             <input
@@ -272,17 +272,17 @@ function CreateTaskModal({ onClose, onSuccess }: CreateTaskModalProps) {
               value={targetValue}
               onChange={(e) => setTargetValue(e.target.value)}
               placeholder={taskType === "author" ? "e.g., user123 or https://www.xiaohongshu.com/user/profile/xxx" : "e.g., 美食推荐"}
-              className="w-full px-3 py-2 bg-background border border-card-border rounded-lg"
+              className="w-full px-3 py-2 bg-white border border-[#e5e5e5] rounded-lg text-[#1a1a1a] text-sm focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Frequency (Cron)</label>
+            <label className="block text-sm font-medium text-[#525252] mb-2">Frequency (Cron)</label>
             <select
               value={frequency}
               onChange={(e) => setFrequency(e.target.value)}
-              className="w-full px-3 py-2 bg-background border border-card-border rounded-lg"
+              className="w-full px-3 py-2 bg-white border border-[#e5e5e5] rounded-lg text-[#1a1a1a] text-sm focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent"
             >
               <option value="0 */6 * * *">Every 6 hours</option>
               <option value="0 */12 * * *">Every 12 hours</option>
@@ -293,33 +293,33 @@ function CreateTaskModal({ onClose, onSuccess }: CreateTaskModalProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Depth (pages)</label>
+            <label className="block text-sm font-medium text-[#525252] mb-2">Depth (pages)</label>
             <input
               type="number"
               value={depth}
               onChange={(e) => setDepth(parseInt(e.target.value))}
               min={1}
               max={20}
-              className="w-full px-3 py-2 bg-background border border-card-border rounded-lg"
+              className="w-full px-3 py-2 bg-white border border-[#e5e5e5] rounded-lg text-[#1a1a1a] text-sm focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent"
             />
           </div>
 
           {error && (
-            <p className="text-destructive text-sm">{error}</p>
+            <p className="text-[#dc2626] text-sm">{error}</p>
           )}
 
           <div className="flex justify-end gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-card-border rounded-lg hover:bg-sidebar-border transition-colors"
+              className="px-4 py-2 border border-[#e5e5e5] rounded-lg hover:bg-[#f5f5f5] transition-all duration-200 text-sm font-medium text-[#525252]"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-2"
+              className="px-4 py-2 bg-[#2563eb] text-white rounded-lg hover:bg-[#1d4ed8] transition-all duration-200 disabled:opacity-50 flex items-center gap-2 text-sm font-medium"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
               Create Task

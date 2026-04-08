@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+const API_URL = process.env.NEXT_PUBLIC_API_URL || ""
 
 export interface PlatformAccount {
   id: number
@@ -28,6 +28,7 @@ export interface ContentAsset {
   id: number
   platform_post_id: string
   platform: "xiaohongshu" | "zhihu" | "wechat" | "douyin"
+  source_url: string | null
   title: string | null
   content_text: string | null
   author_name: string | null
@@ -37,6 +38,7 @@ export interface ContentAsset {
   metrics: { likes: number; comments: number; shares: number; views: number } | null
   is_starred: boolean
   is_archived: boolean
+  is_deleted: boolean
   manual_outline: string | null
   ai_analysis: Record<string, unknown> | null
   created_at: string
@@ -110,7 +112,7 @@ export const api = {
         `/tasks${[platform && `platform=${platform}`, status && `status=${status}`, taskType && `task_type=${taskType}`].filter(Boolean).join("&") ? "?" + [platform && `platform=${platform}`, status && `status=${status}`, taskType && `task_type=${taskType}`].filter(Boolean).join("&") : ""}`
       ),
     get: (id: number) => fetchAPI<ScrapeTask>(`/tasks/${id}`),
-    create: (data: Omit<ScrapeTask, "id" | "status" | "last_run_time" | "created_at" | "updated_at">) =>
+    create: (data: Omit<ScrapeTask, "id" | "last_run_time" | "created_at" | "updated_at">) =>
       fetchAPI<ScrapeTask>("/tasks", {
         method: "POST",
         body: JSON.stringify(data),
@@ -134,6 +136,7 @@ export const api = {
       search?: string;
       is_starred?: boolean;
       is_archived?: boolean;
+      is_deleted?: boolean;
       page?: number; 
       page_size?: number; 
       order_by?: string;
@@ -145,6 +148,7 @@ export const api = {
       if (params?.search) query.set("search", params.search)
       if (params?.is_starred !== undefined) query.set("is_starred", String(params.is_starred))
       if (params?.is_archived !== undefined) query.set("is_archived", String(params.is_archived))
+      if (params?.is_deleted !== undefined) query.set("is_deleted", String(params.is_deleted))
       if (params?.page) query.set("page", String(params.page))
       if (params?.page_size) query.set("page_size", String(params.page_size))
       if (params?.order_by) query.set("order_by", params.order_by)
@@ -170,7 +174,15 @@ export const api = {
         message: string
         mock_data: Record<string, unknown>
       }>(`/content/${id}/ai-analyze`, { method: "POST" }),
-    delete: (id: number) => fetchAPI<void>(`/content/${id}`, { method: "DELETE" }),
+    delete: (id: number, hard: boolean = false) => fetchAPI<void>(`/content/${id}?hard=${hard}`, { method: "DELETE" }),
+    batchDelete: (ids: number[], hard: boolean = false) => fetchAPI<void>(`/content/batch-delete?hard=${hard}`, {
+      method: "POST",
+      body: JSON.stringify(ids),
+    }),
+    batchRestore: (ids: number[]) => fetchAPI<void>(`/content/batch-restore`, {
+      method: "POST",
+      body: JSON.stringify(ids),
+    }),
   },
 
   xhs: {

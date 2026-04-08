@@ -20,6 +20,7 @@ async def list_content(
     search: str = None,
     is_starred: bool = None,
     is_archived: bool = None,
+    is_deleted: bool = False,
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     order_by: str = "publish_date",
@@ -28,6 +29,9 @@ async def list_content(
 ):
     query = select(ContentAsset)
     count_query = select(func.count(ContentAsset.id))
+    
+    query = query.where(ContentAsset.is_deleted == is_deleted)
+    count_query = count_query.where(ContentAsset.is_deleted == is_deleted)
     
     if platform:
         query = query.where(ContentAsset.platform == platform)
@@ -176,7 +180,7 @@ async def toggle_archive(
 
 
 @router.delete("/{content_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_content(content_id: int, db: AsyncSession = Depends(get_db)):
+async def delete_content(content_id: int, hard: bool = False, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(ContentAsset).where(ContentAsset.id == content_id)
     )
@@ -184,7 +188,59 @@ async def delete_content(content_id: int, db: AsyncSession = Depends(get_db)):
     if not content:
         raise HTTPException(status_code=404, detail="Content not found")
     
-    await db.delete(content)
+    if hard:
+        await db.delete(content)
+    else:
+        content.is_deleted = True
+    
+    await db.commit()
+
+
+@router.post("/batch-delete", status_code=status.HTTP_204_NO_CONTENT)
+async def batch_delete_content(
+    content_ids: list[int],
+    hard: bool = False,
+    db: AsyncSession = Depends(get_db),
+):
+    if not content_ids:
+        raise HTTPException(status_code=400, detail="No content IDs provided")
+    
+    if hard:
+        for content_id in content_ids:
+            result = await db.execute(
+                select(ContentAsset).where(ContentAsset.id == content_id)
+            )
+            content = result.scalar_one_or_none()
+            if content:
+                await db.delete(content)
+    else:
+        for content_id in content_ids:
+            result = await db.execute(
+                select(ContentAsset).where(ContentAsset.id == content_id)
+            )
+            content = result.scalar_one_or_none()
+            if content:
+                content.is_deleted = True
+    
+    await db.commit()
+
+
+@router.post("/batch-restore", status_code=status.HTTP_204_NO_CONTENT)
+async def batch_restore_content(
+    content_ids: list[int],
+    db: AsyncSession = Depends(get_db),
+):
+    if not content_ids:
+        raise HTTPException(status_code=400, detail="No content IDs provided")
+    
+    for content_id in content_ids:
+        result = await db.execute(
+            select(ContentAsset).where(ContentAsset.id == content_id)
+        )
+        content = result.scalar_one_or_none()
+        if content:
+            content.is_deleted = False
+    
     await db.commit()
 
 

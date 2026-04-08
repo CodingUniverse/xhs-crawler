@@ -78,30 +78,30 @@ export function XHSLoginModal({ isOpen, onClose, onSuccess }: XHSLoginModalProps
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       
-      <div className="relative bg-card-bg border border-card-border rounded-lg w-[400px] p-6">
+      <div className="relative bg-white border border-[#e5e5e5] rounded-lg w-[400px] p-6 shadow-xl">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-1 hover:bg-sidebar-border rounded"
+          className="absolute top-4 right-4 p-1 hover:bg-[#f5f5f5] rounded transition-all duration-200"
         >
-          <X className="w-5 h-5" />
+          <X className="w-5 h-5 text-[#737373]" />
         </button>
 
         <div className="text-center mb-6">
-          <h2 className="text-xl font-bold">Add Xiaohongshu Account</h2>
-          <p className="text-sm text-muted-foreground">Scan QR code to login</p>
+          <h2 className="text-lg font-semibold text-[#1a1a1a]">Add Xiaohongshu Account</h2>
+          <p className="text-sm text-[#737373] mt-1">Scan QR code to login</p>
         </div>
 
         {loading && (
           <div className="flex flex-col items-center py-12">
-            <Loader2 className="w-12 h-12 animate-spin text-primary" />
-            <p className="mt-4 text-muted-foreground">Generating QR code...</p>
+            <Loader2 className="w-12 h-12 animate-spin text-[#2563eb]" />
+            <p className="mt-4 text-[#737373]">Generating QR code...</p>
           </div>
         )}
 
         {error && (
           <div className="flex flex-col items-center py-8">
-            <AlertCircle className="w-12 h-12 text-destructive" />
-            <p className="mt-4 text-destructive">{error}</p>
+            <AlertCircle className="w-12 h-12 text-[#dc2626]" />
+            <p className="mt-4 text-[#dc2626]">{error}</p>
             <button
               onClick={() => {
                 setError(null)
@@ -112,7 +112,7 @@ export function XHSLoginModal({ isOpen, onClose, onSuccess }: XHSLoginModalProps
                   .catch((e) => setError(e.message))
                   .finally(() => setLoading(false))
               }}
-              className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-lg"
+              className="mt-4 px-4 py-2 bg-[#2563eb] text-white rounded-lg hover:bg-[#1d4ed8] transition-all duration-200 text-sm font-medium"
             >
               Retry
             </button>
@@ -123,23 +123,23 @@ export function XHSLoginModal({ isOpen, onClose, onSuccess }: XHSLoginModalProps
           <div className="flex flex-col items-center">
             {status?.status === "success" ? (
               <div className="flex flex-col items-center py-8">
-                <CheckCircle className="w-16 h-16 text-success" />
-                <p className="mt-4 text-lg font-medium">Login Successful!</p>
-                <p className="text-sm text-muted-foreground">Redirecting...</p>
+                <CheckCircle className="w-16 h-16 text-[#16a34a]" />
+                <p className="mt-4 text-lg font-medium text-[#1a1a1a]">Login Successful!</p>
+                <p className="text-sm text-[#737373]">Redirecting...</p>
               </div>
             ) : status?.status === "pending" || !status ? (
               <>
-                <div className="bg-white p-4 rounded-lg">
+                <div className="bg-white p-4 rounded-lg border border-[#e5e5e5]">
                   <img
                     src={`data:image/png;base64,${qrData.qr_code}`}
                     alt="Login QR Code"
                     className="w-48 h-48"
                   />
                 </div>
-                <p className="mt-4 text-sm text-muted-foreground">
+                <p className="mt-4 text-sm text-[#737373]">
                   Open Xiaohongshu Creator App and scan the QR code
                 </p>
-                <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="mt-4 flex items-center gap-2 text-sm text-[#737373]">
                   <Loader2 className="w-4 h-4 animate-spin" />
                   Waiting for scan...
                 </div>

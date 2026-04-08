@@ -103,6 +103,7 @@ class Metrics(BaseModel):
 class ContentAssetBase(BaseModel):
     platform_post_id: str
     platform: PlatformEnum
+    source_url: Optional[str] = None
     title: Optional[str] = None
     content_text: Optional[str] = None
     author_name: Optional[str] = None
@@ -117,6 +118,7 @@ class ContentAssetCreate(ContentAssetBase):
 
 
 class ContentAssetUpdate(BaseModel):
+    source_url: Optional[str] = None
     title: Optional[str] = None
     content_text: Optional[str] = None
     author_name: Optional[str] = None
@@ -132,6 +134,7 @@ class ContentAssetResponse(ContentAssetBase):
     id: int
     is_starred: bool = False
     is_archived: bool = False
+    is_deleted: bool = False
     manual_outline: Optional[str] = None
     ai_analysis: Optional[dict] = None
     created_at: datetime
