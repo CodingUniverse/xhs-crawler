@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || ""
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
 
 export interface PlatformAccount {
   id: number
@@ -65,8 +65,19 @@ export interface LoginStatusResponse {
   message?: string
 }
 
+function getBaseUrl(): string {
+  if (API_URL) {
+    return API_URL
+  }
+  if (typeof window !== "undefined") {
+    return window.location.origin
+  }
+  return "http://localhost:8000"
+}
+
 async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_URL}${endpoint}`, {
+  const baseUrl = getBaseUrl()
+  const response = await fetch(`${baseUrl}${endpoint}`, {
     headers: {
       "Content-Type": "application/json",
       ...options?.headers,
