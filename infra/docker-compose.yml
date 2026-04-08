@@ -60,7 +60,7 @@ services:
       dockerfile: Dockerfile
     container_name: xhs_crawler_frontend
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8005
+      - NEXT_PUBLIC_API_URL=http://backend:8000
       - NEXT_PUBLIC_API_BASE=/api
     depends_on:
       - backend

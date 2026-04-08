@@ -162,14 +162,14 @@ export function ContentClient({ initialContent }: ContentClientProps) {
   }
 
   return (
-    <div className="p-8">
-      <div className="flex justify-between items-center mb-6">
+    <div className="p-4 lg:p-8">
+      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-6 gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-[#1a1a1a] tracking-tight mb-1">Content Assets</h1>
+          <h1 className="text-xl lg:text-2xl font-semibold text-[#1a1a1a] tracking-tight mb-1">Content Assets</h1>
           <p className="text-[#737373] text-sm">View and manage collected content</p>
         </div>
         
-        <div className="flex items-center gap-2 bg-[#f5f5f5] p-1 rounded-lg">
+        <div className="flex items-center gap-2 bg-[#f5f5f5] p-1 rounded-lg self-start lg:self-auto">
           <button
             onClick={() => setViewMode("card")}
             className={`px-3 py-1.5 rounded-md flex items-center gap-2 text-sm transition-all duration-200 ${
