@@ -1,4 +1,17 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+const API_URL = process.env.NEXT_PUBLIC_API_URL || ""
+const IS_PRODUCTION = process.env.NODE_ENV === "production"
+
+function getBaseUrl(): string {
+  if (!IS_PRODUCTION) {
+    return API_URL || "http://localhost:8000"
+  }
+  
+  if (API_URL && API_URL !== "/api") {
+    return API_URL
+  }
+  
+  return "/api"
+}
 
 export interface PlatformAccount {
   id: number
@@ -63,16 +76,6 @@ export interface LoginStatusResponse {
   status: "pending" | "success" | "expired" | "timeout" | "error"
   account_id?: number
   message?: string
-}
-
-function getBaseUrl(): string {
-  if (API_URL) {
-    return API_URL
-  }
-  if (typeof window !== "undefined") {
-    return window.location.origin
-  }
-  return "http://localhost:8000"
 }
 
 async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> {
