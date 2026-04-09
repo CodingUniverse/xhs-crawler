@@ -20,6 +20,7 @@ jobs:
           username: ${{ secrets.VULTR_USERNAME }}
           password: ${{ secrets.VULTR_PASSWORD }}
           port: 22
+          command_timeout: 30m
           script: |
             cd /var/www/myproject
             
