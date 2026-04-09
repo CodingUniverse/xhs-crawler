@@ -4,15 +4,26 @@ import { useState, useEffect } from "react"
 import { api, ScrapeTask } from "@/lib/api"
 import { X, Plus, Play, Pause, Loader2, Trash2 } from "lucide-react"
 
-interface TasksClientProps {
-  initialTasks: ScrapeTask[]
-}
-
-export function TasksClient({ initialTasks }: TasksClientProps) {
-  const [tasks, setTasks] = useState(initialTasks)
+export function TasksClient() {
+  const [tasks, setTasks] = useState<ScrapeTask[]>([])
+  const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
-  const [loading, setLoading] = useState(false)
   const [executingTaskId, setExecutingTaskId] = useState<number | null>(null)
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        setLoading(true)
+        const data = await api.tasks.list()
+        setTasks(data)
+      } catch (e) {
+        console.error("Failed to load tasks:", e)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchTasks()
+  }, [])
 
   const refreshTasks = async () => {
     try {

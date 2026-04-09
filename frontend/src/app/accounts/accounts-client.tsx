@@ -1,19 +1,32 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { api, PlatformAccount } from "@/lib/api"
 import { XHSLoginModal } from "@/components/xhs-login-modal"
-import { Plus, QrCode, AlertCircle } from "lucide-react"
+import { Plus, QrCode, AlertCircle, Loader2 } from "lucide-react"
 
-interface AccountsClientProps {
-  initialAccounts: PlatformAccount[]
-  error?: string | null
-}
-
-export function AccountsClient({ initialAccounts, error }: AccountsClientProps) {
-  const [accounts, setAccounts] = useState(initialAccounts)
+export function AccountsClient() {
+  const [accounts, setAccounts] = useState<PlatformAccount[]>([])
+  const [loading, setLoading] = useState(true)
   const [showXHSModal, setShowXHSModal] = useState(false)
-  const [connectionError, setConnectionError] = useState<string | null>(error || null)
+  const [connectionError, setConnectionError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchAccounts = async () => {
+      try {
+        setLoading(true)
+        const data = await api.accounts.list()
+        setAccounts(data)
+        setConnectionError(null)
+      } catch (e) {
+        console.error("Failed to load accounts:", e)
+        setConnectionError(e instanceof Error ? e.message : "Failed to connect to backend")
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchAccounts()
+  }, [])
 
   const refreshAccounts = async () => {
     try {
