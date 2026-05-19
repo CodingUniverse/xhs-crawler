@@ -290,19 +290,26 @@ class PlatformScraper:
                     raise ValueError(f"笔记 {note_id} 暂时无法浏览，可能已被删除或设置权限")
                 raise ValueError(f"笔记 {note_id} 被登录页/验证码拦截")
 
-            state_match = re.search(r'window\.__INITIAL_STATE__\s*=\s*({.*})', html_content, re.DOTALL)
+            state_match = re.search(r'__INITIAL_STATE__\s*=\s*({.*?});?\s*</script>', html_content, re.DOTALL)
 
             if not state_match:
                 raise ValueError(f"笔记 {note_id}：未找到初始状态，页面结构可能已变更")
 
+            json_str = state_match.group(1)
+            json_str = re.sub(r':undefined([,}])', r':null\1', json_str)
+
             try:
-                state_data = json.loads(state_match.group(1))
+                state_data = json.loads(json_str)
             except json.JSONDecodeError as e:
                 raise ValueError(f"JSON 解析失败: {e}")
 
             target_note = None
 
-            if "note" in state_data and "noteDetailMap" in state_data.get("note", {}):
+            note_data = state_data.get("noteData", {}).get("data", {}).get("noteData", {})
+            if note_data and note_data.get("noteId") == note_id:
+                target_note = note_data
+
+            if not target_note and "note" in state_data and "noteDetailMap" in state_data.get("note", {}):
                 note_detail_map = state_data["note"]["noteDetailMap"]
                 for key in note_detail_map:
                     entry = note_detail_map[key]
@@ -331,18 +338,18 @@ class PlatformScraper:
         return None
 
     def _parse_note_data(self, note_data: dict, note_id: str, source_url: str) -> dict:
-        title = note_data.get("title", "") or note_data.get("desc", "")[:100]
-        content_text = note_data.get("desc", "")
+        title = note_data.get("title", "") or note_data.get("desc", "")[:100] or note_data.get("display_title", "")
+        content_text = note_data.get("desc", "") or note_data.get("content", "")
 
-        user_info = note_data.get("user", {})
-        author_name = user_info.get("nickname", "")
-        author_id = user_info.get("user_id", "")
+        user_info = note_data.get("user", {}) or {}
+        author_name = user_info.get("nickname", "") or user_info.get("nickName", "") or user_info.get("name", "")
+        author_id = str(user_info.get("user_id", "") or user_info.get("userId", "") or "")
 
-        interact_info = note_data.get("interact_info", {})
-        likes = int(interact_info.get("liked_count", 0) or 0)
-        comments = int(interact_info.get("comment_count", 0) or 0)
-        shares = int(interact_info.get("share_count", 0) or 0)
-        views = int(interact_info.get("play_count", 0) or 0)
+        interact_info = note_data.get("interact_info", {}) or note_data.get("interactInfo", {})
+        likes = int(interact_info.get("liked_count", 0) or interact_info.get("likedCount", 0) or 0)
+        comments = int(interact_info.get("comment_count", 0) or interact_info.get("commentCount", 0) or 0)
+        shares = int(interact_info.get("share_count", 0) or interact_info.get("shareCount", 0) or 0)
+        views = int(interact_info.get("play_count", 0) or interact_info.get("viewCount", 0) or 0)
 
         images = []
         image_list = note_data.get("image_list", []) or note_data.get("imageList", [])
@@ -353,15 +360,15 @@ class PlatformScraper:
                 url = None
                 info_list = img.get("info_list", []) or img.get("infoList", [])
                 if info_list:
-                    scs = info_list[0].get("image_scs", {})
+                    scs = info_list[0].get("image_scs", {}) or info_list[0].get("imageScs", {})
                     url = scs.get("url_default", "") or scs.get("url", "") or info_list[0].get("url", "")
                 if not url:
                     url = img.get("url_default", "") or img.get("url", "")
-                if url and url.startswith("http"):
+                if url and url.startswith("http") and url not in images:
                     images.append(url)
 
         publish_date = datetime.utcnow()
-        ts = note_data.get("time", 0)
+        ts = note_data.get("time", 0) or note_data.get("lastUpdateTime", 0)
         if ts:
             try:
                 publish_date = datetime.fromtimestamp(ts / 1000)
@@ -484,11 +491,11 @@ class PlatformScraper:
                 return None
 
             user = note.get("user") or {}
-            interact_info = note.get("interact_info") or {}
-            image_list = note.get("image_list") or []
+            interact_info = note.get("interact_info") or note.get("interactInfo") or {}
+            image_list = note.get("image_list") or note.get("imageList") or []
 
             title = note.get("title", "") or data.get("title", "")
-            desc = note.get("desc", "") or note.get("content", "") or data.get("desc", "")
+            desc = note.get("desc", "") or note.get("content", "") or data.get("display_content", "") or data.get("desc", "")
 
             images = []
             for img in image_list:
@@ -500,6 +507,8 @@ class PlatformScraper:
                         images.append(url_info)
                     elif isinstance(url_info, dict) and url_info.get("url"):
                         images.append(url_info["url"])
+                    elif isinstance(img.get("url"), str) and img["url"].startswith("http"):
+                        images.append(img["url"])
 
             def parse_number(val):
                 if not val:
@@ -513,8 +522,8 @@ class PlatformScraper:
                 "platform_post_id": nid,
                 "title": title or (desc[:100] if desc else f"笔记 {nid}"),
                 "content_text": desc,
-                "author_name": user.get("nickname", "") or data.get("author", ""),
-                "author_id": str(user.get("user_id", "") or data.get("author_id", "")),
+                "author_name": user.get("nickname", "") or user.get("nickName", "") or data.get("author", ""),
+                "author_id": str(user.get("user_id", "") or user.get("userId", "") or data.get("author_id", "")),
                 "publish_date": datetime.utcnow(),
                 "media_urls": {"images": images, "video": None},
                 "metrics": {
