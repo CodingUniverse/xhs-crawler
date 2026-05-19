@@ -15,10 +15,10 @@ import {
 } from "lucide-react"
 
 const navItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/accounts", label: "Account Pool", icon: Users },
-  { href: "/tasks", label: "Tasks", icon: Clock },
-  { href: "/content", label: "Content Assets", icon: FileText },
+  { href: "/", label: "控制台", icon: LayoutDashboard },
+  { href: "/accounts", label: "账号池", icon: Users },
+  { href: "/tasks", label: "采集任务", icon: Clock },
+  { href: "/content", label: "内容资产", icon: FileText },
 ]
 
 export function Sidebar() {
@@ -48,15 +48,15 @@ export function Sidebar() {
         )}
       >
         <div className="p-6 border-b border-[#e5e5e5]">
-          <h1 className="text-xl font-semibold text-[#1a1a1a] tracking-tight">XHS Crawler</h1>
-          <p className="text-sm text-[#737373] mt-0.5">Social Media Analytics</p>
+          <h1 className="text-xl font-semibold text-[#1a1a1a] tracking-tight">小红书采集系统</h1>
+          <p className="text-sm text-[#737373] mt-0.5">社交媒体内容采集</p>
         </div>
-        
+
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {navItems.map((item) => {
-            const isActive = pathname === item.href || 
+            const isActive = pathname === item.href ||
               (item.href !== "/" && pathname.startsWith(item.href))
-            
+
             return (
               <Link
                 key={item.href}
@@ -75,7 +75,7 @@ export function Sidebar() {
             )
           })}
         </nav>
-        
+
         <div className="p-4 border-t border-[#e5e5e5]">
           <Link
             href="/settings"
@@ -83,7 +83,7 @@ export function Sidebar() {
             className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-[#525252] hover:bg-[#f5f5f5] hover:text-[#1a1a1a] transition-all duration-200"
           >
             <Settings className="w-4.5 h-4.5" />
-            Settings
+            设置
           </Link>
         </div>
       </aside>

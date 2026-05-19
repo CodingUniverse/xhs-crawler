@@ -56,7 +56,7 @@ export function TasksClient() {
   }
 
   const handleDelete = async (taskId: number) => {
-    if (!confirm("Are you sure you want to delete this task?")) return
+    if (!confirm("确定要删除此任务？")) return
     try {
       await api.tasks.delete(taskId)
       refreshTasks()
@@ -73,8 +73,14 @@ export function TasksClient() {
   }
 
   const taskTypeLabels: Record<string, string> = {
-    keyword: "Keyword",
-    author: "Author",
+    keyword: "关键词",
+    author: "作者",
+  }
+
+  const statusLabels: Record<string, string> = {
+    running: "运行中",
+    paused: "已暂停",
+    stopped: "已停止",
   }
 
   const statusColors: Record<string, string> = {
@@ -84,68 +90,72 @@ export function TasksClient() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 lg:p-8">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-[#1a1a1a] tracking-tight mb-1">Scrape Tasks</h1>
-          <p className="text-[#737373] text-sm">Create and manage scraping jobs</p>
+          <h1 className="text-2xl font-semibold text-[#1a1a1a] tracking-tight mb-1">采集任务</h1>
+          <p className="text-[#737373] text-sm">创建和管理采集任务</p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
           className="px-4 py-2 bg-[#2563eb] text-white rounded-lg hover:bg-[#1d4ed8] transition-all duration-200 flex items-center gap-2 text-sm font-medium shadow-sm"
         >
           <Plus className="w-4 h-4" />
-          Create Task
+          新建任务
         </button>
       </div>
 
-      {tasks.length === 0 ? (
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-[#737373]" />
+        </div>
+      ) : tasks.length === 0 ? (
         <div className="bg-white border border-[#e5e5e5] rounded-lg p-12 text-center shadow-sm">
-          <p className="text-[#737373] mb-4">No tasks yet</p>
+          <p className="text-[#737373] mb-4">暂无任务</p>
           <button
             onClick={() => setShowCreateModal(true)}
             className="text-[#2563eb] hover:underline text-sm font-medium"
           >
-            Create your first task
+            创建第一个任务
           </button>
         </div>
       ) : (
-        <div className="bg-white border border-[#e5e5e5] rounded-lg overflow-hidden shadow-sm">
-          <table className="w-full">
+        <div className="bg-white border border-[#e5e5e5] rounded-lg shadow-sm table-wrap">
+          <table>
             <thead>
               <tr className="border-b border-[#e5e5e5] bg-[#fafafa]">
-                <th className="text-left p-4 font-medium text-[#525252] text-sm">Platform</th>
-                <th className="text-left p-4 font-medium text-[#525252] text-sm">Type</th>
-                <th className="text-left p-4 font-medium text-[#525252] text-sm">Target</th>
-                <th className="text-left p-4 font-medium text-[#525252] text-sm">Frequency</th>
-                <th className="text-left p-4 font-medium text-[#525252] text-sm">Status</th>
-                <th className="text-left p-4 font-medium text-[#525252] text-sm">Last Run</th>
-                <th className="text-left p-4 font-medium text-[#525252] text-sm">Actions</th>
+                <th className="text-left p-3 lg:p-4 font-medium text-[#525252] text-sm w-20">平台</th>
+                <th className="text-left p-3 lg:p-4 font-medium text-[#525252] text-sm w-16">类型</th>
+                <th className="text-left p-3 lg:p-4 font-medium text-[#525252] text-sm min-w-[160px]">目标</th>
+                <th className="text-left p-3 lg:p-4 font-medium text-[#525252] text-sm w-24">频率</th>
+                <th className="text-left p-3 lg:p-4 font-medium text-[#525252] text-sm w-16">状态</th>
+                <th className="text-left p-3 lg:p-4 font-medium text-[#525252] text-sm w-36 whitespace-nowrap">上次执行</th>
+                <th className="text-left p-3 lg:p-4 font-medium text-[#525252] text-sm w-24">操作</th>
               </tr>
             </thead>
             <tbody>
               {tasks.map((task) => (
                 <tr key={task.id} className="border-b border-[#e5e5e5] last:border-0 hover:bg-[#fafafa]">
-                  <td className="p-4 text-[#1a1a1a] text-sm">{platformLabels[task.platform]}</td>
-                  <td className="p-4 text-[#1a1a1a] text-sm">{taskTypeLabels[task.task_type]}</td>
-                  <td className="p-4 font-mono text-sm max-w-xs truncate text-[#1a1a1a]">{task.target_value}</td>
-                  <td className="p-4 font-mono text-sm text-[#525252]">{task.frequency}</td>
-                  <td className="p-4">
-                    <span className={statusColors[task.status]}>{task.status}</span>
+                  <td className="p-3 lg:p-4 text-[#1a1a1a] text-sm">{platformLabels[task.platform]}</td>
+                  <td className="p-3 lg:p-4 text-[#1a1a1a] text-sm">{taskTypeLabels[task.task_type]}</td>
+                  <td className="p-3 lg:p-4 text-[#1a1a1a] text-sm truncate max-w-[260px] font-mono">{task.target_value}</td>
+                  <td className="p-3 lg:p-4 text-[#525252] text-sm font-mono">{task.frequency}</td>
+                  <td className="p-3 lg:p-4">
+                    <span className={`${statusColors[task.status]} text-sm whitespace-nowrap`}>{statusLabels[task.status] || task.status}</span>
                   </td>
-                  <td className="p-4 text-[#737373] text-sm">
+                  <td className="p-3 lg:p-4 text-[#737373] text-sm whitespace-nowrap">
                     <span suppressHydrationWarning>
-                      {task.last_run_time 
-                        ? new Date(task.last_run_time).toLocaleString() 
-                        : "Never"}
+                      {task.last_run_time
+                        ? new Date(task.last_run_time).toLocaleString("zh-CN")
+                        : "从未执行"}
                     </span>
                   </td>
-                  <td className="p-4">
-                    <div className="flex items-center gap-1">
+                  <td className="p-3 lg:p-4">
+                    <div className="flex items-center gap-1 whitespace-nowrap">
                       <button
                         onClick={() => handleToggle(task.id)}
                         className="p-2 hover:bg-[#f5f5f5] rounded transition-all duration-200"
-                        title={task.status === "running" ? "Pause" : "Run"}
+                        title={task.status === "running" ? "暂停" : "启动"}
                       >
                         {task.status === "running" ? (
                           <Pause className="w-4 h-4 text-[#525252]" />
@@ -157,7 +167,7 @@ export function TasksClient() {
                         onClick={() => handleExecute(task.id)}
                         disabled={executingTaskId === task.id}
                         className="p-2 hover:bg-[#f5f5f5] rounded transition-all duration-200 disabled:opacity-50"
-                        title="Execute now"
+                        title="立即执行"
                       >
                         {executingTaskId === task.id ? (
                           <Loader2 className="w-4 h-4 animate-spin text-[#2563eb]" />
@@ -168,7 +178,7 @@ export function TasksClient() {
                       <button
                         onClick={() => handleDelete(task.id)}
                         className="p-2 hover:bg-[#f5f5f5] rounded transition-all duration-200 text-[#dc2626]"
-                        title="Delete"
+                        title="删除"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -225,7 +235,7 @@ function CreateTaskModal({ onClose, onSuccess }: CreateTaskModalProps) {
       })
       onSuccess()
     } catch (e: any) {
-      setError(e.message || "Failed to create task")
+      setError(e.message || "创建任务失败")
     } finally {
       setLoading(false)
     }
@@ -234,7 +244,7 @@ function CreateTaskModal({ onClose, onSuccess }: CreateTaskModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      
+
       <div className="relative bg-white border border-[#e5e5e5] rounded-lg w-[500px] p-6 shadow-xl">
         <button
           onClick={onClose}
@@ -243,11 +253,11 @@ function CreateTaskModal({ onClose, onSuccess }: CreateTaskModalProps) {
           <X className="w-5 h-5 text-[#737373]" />
         </button>
 
-        <h2 className="text-lg font-semibold text-[#1a1a1a] mb-5">Create New Task</h2>
+        <h2 className="text-lg font-semibold text-[#1a1a1a] mb-5">新建采集任务</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[#525252] mb-2">Platform</label>
+            <label className="block text-sm font-medium text-[#525252] mb-2">平台</label>
             <select
               value={platform}
               onChange={(e) => setPlatform(e.target.value)}
@@ -262,49 +272,49 @@ function CreateTaskModal({ onClose, onSuccess }: CreateTaskModalProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#525252] mb-2">Task Type</label>
+            <label className="block text-sm font-medium text-[#525252] mb-2">任务类型</label>
             <select
               value={taskType}
               onChange={(e) => setTaskType(e.target.value)}
               className="w-full px-3 py-2 bg-white border border-[#e5e5e5] rounded-lg text-[#1a1a1a] text-sm focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent"
               required
             >
-              <option value="author">Author (Author ID/URL)</option>
-              <option value="keyword">Keyword Search</option>
+              <option value="author">作者（作者ID/主页链接）</option>
+              <option value="keyword">关键词搜索</option>
             </select>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-[#525252] mb-2">
-              {taskType === "author" ? "Author ID / Homepage URL" : "Keyword"}
+              {taskType === "author" ? "作者 ID / 主页链接" : "关键词"}
             </label>
             <input
               type="text"
               value={targetValue}
               onChange={(e) => setTargetValue(e.target.value)}
-              placeholder={taskType === "author" ? "e.g., user123 or https://www.xiaohongshu.com/user/profile/xxx" : "e.g., 美食推荐"}
+              placeholder={taskType === "author" ? "例如：user123 或 https://www.xiaohongshu.com/user/profile/xxx" : "例如：美食推荐"}
               className="w-full px-3 py-2 bg-white border border-[#e5e5e5] rounded-lg text-[#1a1a1a] text-sm focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#525252] mb-2">Frequency (Cron)</label>
+            <label className="block text-sm font-medium text-[#525252] mb-2">执行频率（Cron 表达式）</label>
             <select
               value={frequency}
               onChange={(e) => setFrequency(e.target.value)}
               className="w-full px-3 py-2 bg-white border border-[#e5e5e5] rounded-lg text-[#1a1a1a] text-sm focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent"
             >
-              <option value="0 */6 * * *">Every 6 hours</option>
-              <option value="0 */12 * * *">Every 12 hours</option>
-              <option value="0 0 * * *">Daily at midnight</option>
-              <option value="0 */1 * * *">Every hour</option>
-              <option value="*/30 * * * *">Every 30 minutes</option>
+              <option value="0 */6 * * *">每 6 小时</option>
+              <option value="0 */12 * * *">每 12 小时</option>
+              <option value="0 0 * * *">每天午夜</option>
+              <option value="0 */1 * * *">每 1 小时</option>
+              <option value="*/30 * * * *">每 30 分钟</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#525252] mb-2">Depth (pages)</label>
+            <label className="block text-sm font-medium text-[#525252] mb-2">采集深度（页数）</label>
             <input
               type="number"
               value={depth}
@@ -325,7 +335,7 @@ function CreateTaskModal({ onClose, onSuccess }: CreateTaskModalProps) {
               onClick={onClose}
               className="px-4 py-2 border border-[#e5e5e5] rounded-lg hover:bg-[#f5f5f5] transition-all duration-200 text-sm font-medium text-[#525252]"
             >
-              Cancel
+              取消
             </button>
             <button
               type="submit"
@@ -333,7 +343,7 @@ function CreateTaskModal({ onClose, onSuccess }: CreateTaskModalProps) {
               className="px-4 py-2 bg-[#2563eb] text-white rounded-lg hover:bg-[#1d4ed8] transition-all duration-200 disabled:opacity-50 flex items-center gap-2 text-sm font-medium"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-              Create Task
+              创建任务
             </button>
           </div>
         </form>

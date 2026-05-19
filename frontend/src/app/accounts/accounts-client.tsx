@@ -20,7 +20,7 @@ export function AccountsClient() {
         setConnectionError(null)
       } catch (e) {
         console.error("Failed to load accounts:", e)
-        setConnectionError(e instanceof Error ? e.message : "Failed to connect to backend")
+        setConnectionError(e instanceof Error ? e.message : "无法连接到后端服务")
       } finally {
         setLoading(false)
       }
@@ -44,6 +44,12 @@ export function AccountsClient() {
     douyin: "抖音",
   }
 
+  const statusLabels: Record<string, string> = {
+    active: "活跃",
+    expired: "已过期",
+    pending: "待确认",
+  }
+
   const statusColors: Record<string, string> = {
     active: "bg-[#16a34a]",
     expired: "bg-[#dc2626]",
@@ -51,11 +57,11 @@ export function AccountsClient() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 lg:p-8">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-[#1a1a1a] tracking-tight mb-1">Account Pool</h1>
-          <p className="text-[#737373] text-sm">Manage platform accounts and cookies</p>
+          <h1 className="text-2xl font-semibold text-[#1a1a1a] tracking-tight mb-1">账号池</h1>
+          <p className="text-[#737373] text-sm">管理平台账号和 Cookies</p>
         </div>
         <div className="flex gap-3">
           <button
@@ -63,7 +69,7 @@ export function AccountsClient() {
             className="px-4 py-2 bg-[#2563eb] text-white rounded-lg hover:bg-[#1d4ed8] transition-all duration-200 flex items-center gap-2 text-sm font-medium shadow-sm"
           >
             <QrCode className="w-4 h-4" />
-            Add XHS Account
+            添加小红书账号
           </button>
         </div>
       </div>
@@ -72,21 +78,25 @@ export function AccountsClient() {
         <div className="bg-[#fef2f2] border border-[#fecaca] rounded-lg p-4 mb-6 flex items-start gap-3">
           <AlertCircle className="w-5 h-5 text-[#dc2626] flex-shrink-0 mt-0.5" />
           <div>
-            <p className="font-medium text-[#dc2626]">Cannot connect to backend</p>
+            <p className="font-medium text-[#dc2626]">无法连接到后端服务</p>
             <p className="text-sm text-[#737373]">{connectionError}</p>
-            <p className="text-sm text-[#737373] mt-1">Make sure the backend is running at http://localhost:8000</p>
+            <p className="text-sm text-[#737373] mt-1">请确保后端服务已在 http://localhost:8000 运行</p>
           </div>
         </div>
       )}
 
-      {accounts.length === 0 && !connectionError ? (
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-[#737373]" />
+        </div>
+      ) : accounts.length === 0 && !connectionError ? (
         <div className="bg-white border border-[#e5e5e5] rounded-lg p-12 text-center shadow-sm">
-          <p className="text-[#737373] mb-4">No accounts yet</p>
+          <p className="text-[#737373] mb-4">暂无账号</p>
           <button
             onClick={() => setShowXHSModal(true)}
             className="text-[#2563eb] hover:underline text-sm font-medium"
           >
-            Add your first account
+            添加第一个账号
           </button>
         </div>
       ) : (
@@ -94,10 +104,10 @@ export function AccountsClient() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-[#e5e5e5] bg-[#fafafa]">
-                <th className="text-left p-4 font-medium text-[#525252] text-sm">Platform</th>
-                <th className="text-left p-4 font-medium text-[#525252] text-sm">Account Name</th>
-                <th className="text-left p-4 font-medium text-[#525252] text-sm">Status</th>
-                <th className="text-left p-4 font-medium text-[#525252] text-sm">Updated</th>
+                <th className="text-left p-4 font-medium text-[#525252] text-sm">平台</th>
+                <th className="text-left p-4 font-medium text-[#525252] text-sm">账号名称</th>
+                <th className="text-left p-4 font-medium text-[#525252] text-sm">状态</th>
+                <th className="text-left p-4 font-medium text-[#525252] text-sm">更新时间</th>
               </tr>
             </thead>
             <tbody>
@@ -106,8 +116,10 @@ export function AccountsClient() {
                   <td className="p-4 text-[#1a1a1a] text-sm">{platformLabels[account.platform_name]}</td>
                   <td className="p-4 text-[#1a1a1a] text-sm">{account.account_name}</td>
                   <td className="p-4">
-                    <span className={`inline-block w-2 h-2 rounded-full ${statusColors[account.status]} mr-2`} />
-                    <span className="text-sm text-[#525252]">{account.status}</span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className={`inline-block w-2 h-2 rounded-full ${statusColors[account.status]}`} />
+                      <span className="text-sm text-[#525252]">{statusLabels[account.status] || account.status}</span>
+                    </span>
                   </td>
                   <td className="p-4 text-[#737373] text-sm">
                     <span suppressHydrationWarning>

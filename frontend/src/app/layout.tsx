@@ -3,8 +3,8 @@ import "./globals.css"
 import { Sidebar } from "@/components/sidebar"
 
 export const metadata: Metadata = {
-  title: "XHS Crawler - Social Media Analytics",
-  description: "Social media content crawler and analytics system",
+  title: "XHS Crawler - 小红书内容采集系统",
+  description: "社交媒体内容采集与分析平台",
 }
 
 export default function RootLayout({
@@ -13,11 +13,11 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="h-full antialiased">
+    <html lang="zh-CN" className="h-full antialiased">
       <body className="min-h-full flex flex-col bg-white">
         <div className="flex flex-1">
           <Sidebar />
-          <main className="flex-1 overflow-auto bg-white lg:pl-0 pl-16">
+          <main className="flex-1 overflow-auto bg-white lg:ml-0 ml-16">
             {children}
           </main>
         </div>

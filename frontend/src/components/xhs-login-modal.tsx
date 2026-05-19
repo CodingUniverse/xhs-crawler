@@ -25,7 +25,7 @@ export function XHSLoginModal({ isOpen, onClose, onSuccess }: XHSLoginModalProps
         onSuccess()
         return true
       } else if (statusData.status === "expired" || statusData.status === "timeout" || statusData.status === "error") {
-        setError(statusData.message || "Login failed")
+        setError(statusData.message || "登录失败")
         return true
       }
     } catch (e) {
@@ -50,7 +50,7 @@ export function XHSLoginModal({ isOpen, onClose, onSuccess }: XHSLoginModalProps
         setQrData(data)
       })
       .catch((e) => {
-        setError(e.message || "Failed to generate QR code")
+        setError(e.message || "生成二维码失败")
       })
       .finally(() => {
         setLoading(false)
@@ -77,7 +77,7 @@ export function XHSLoginModal({ isOpen, onClose, onSuccess }: XHSLoginModalProps
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      
+
       <div className="relative bg-white border border-[#e5e5e5] rounded-lg w-[400px] p-6 shadow-xl">
         <button
           onClick={onClose}
@@ -87,14 +87,14 @@ export function XHSLoginModal({ isOpen, onClose, onSuccess }: XHSLoginModalProps
         </button>
 
         <div className="text-center mb-6">
-          <h2 className="text-lg font-semibold text-[#1a1a1a]">Add Xiaohongshu Account</h2>
-          <p className="text-sm text-[#737373] mt-1">Scan QR code to login</p>
+          <h2 className="text-lg font-semibold text-[#1a1a1a]">添加小红书账号</h2>
+          <p className="text-sm text-[#737373] mt-1">扫码登录</p>
         </div>
 
         {loading && (
           <div className="flex flex-col items-center py-12">
             <Loader2 className="w-12 h-12 animate-spin text-[#2563eb]" />
-            <p className="mt-4 text-[#737373]">Generating QR code...</p>
+            <p className="mt-4 text-[#737373]">正在生成二维码...</p>
           </div>
         )}
 
@@ -114,7 +114,7 @@ export function XHSLoginModal({ isOpen, onClose, onSuccess }: XHSLoginModalProps
               }}
               className="mt-4 px-4 py-2 bg-[#2563eb] text-white rounded-lg hover:bg-[#1d4ed8] transition-all duration-200 text-sm font-medium"
             >
-              Retry
+              重试
             </button>
           </div>
         )}
@@ -124,24 +124,24 @@ export function XHSLoginModal({ isOpen, onClose, onSuccess }: XHSLoginModalProps
             {status?.status === "success" ? (
               <div className="flex flex-col items-center py-8">
                 <CheckCircle className="w-16 h-16 text-[#16a34a]" />
-                <p className="mt-4 text-lg font-medium text-[#1a1a1a]">Login Successful!</p>
-                <p className="text-sm text-[#737373]">Redirecting...</p>
+                <p className="mt-4 text-lg font-medium text-[#1a1a1a]">登录成功！</p>
+                <p className="text-sm text-[#737373]">正在跳转...</p>
               </div>
             ) : status?.status === "pending" || !status ? (
               <>
                 <div className="bg-white p-4 rounded-lg border border-[#e5e5e5]">
                   <img
                     src={`data:image/png;base64,${qrData.qr_code}`}
-                    alt="Login QR Code"
+                    alt="登录二维码"
                     className="w-48 h-48"
                   />
                 </div>
                 <p className="mt-4 text-sm text-[#737373]">
-                  Open Xiaohongshu Creator App and scan the QR code
+                  打开小红书创作者 App 扫码
                 </p>
                 <div className="mt-4 flex items-center gap-2 text-sm text-[#737373]">
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Waiting for scan...
+                  等待扫码...
                 </div>
               </>
             ) : null}
