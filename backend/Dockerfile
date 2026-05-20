@@ -9,8 +9,7 @@ RUN apt-get update && \
         libcups2 libdrm2 libdbus-1-3 libxkbcommon0 \
         libxcomposite1 libxdamage1 libxfixes3 libxrandr2 \
         libgbm1 libpango-1.0-0 libcairo2 libasound2 \
-        libpangoft2-1.0-0 libgdk-pixbuf2.0-0 fonts-liberation \
-        fonts-unifont fonts-wqy-zenhei \
+        libpangoft2-1.0-0 libgdk-pixbuf-2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
