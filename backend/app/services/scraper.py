@@ -50,8 +50,7 @@ class PlatformScraper:
                 "--no-sandbox",
                 "--disable-setuid-sandbox",
                 "--disable-dev-shm-usage",
-                "--disable-gpu",
-                "--single-process",
+
                 "--disable-blink-features=AutomationControlled",
                 "--disable-web-security",
                 "--disable-features=IsolateOrigins,site-per-process",
@@ -136,19 +135,7 @@ class PlatformScraper:
         logger.info(f"Resolving XHS short URL: {short_url}")
 
         try:
-            mobile_ua = random.choice(MOBILE_USER_AGENTS)
-            mobile_context = await self.browser.new_context(
-                viewport={"width": 390, "height": 844},
-                user_agent=mobile_ua,
-                locale="zh-CN",
-                timezone_id="Asia/Shanghai",
-            )
-            for cookie in self.cookies:
-                try:
-                    await mobile_context.add_cookies([cookie])
-                except:
-                    pass
-            page = await mobile_context.new_page()
+            page = await self.context.new_page()
             await page.goto(short_url, wait_until="domcontentloaded", timeout=20000)
 
             resolved_url = page.url
@@ -173,7 +160,6 @@ class PlatformScraper:
                 result["xsec_source"] = query_params['xsec_source'][0]
 
             await page.close()
-            await mobile_context.close()
             return result if result.get("note_id") else None
 
         except Exception as e:
