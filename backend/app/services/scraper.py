@@ -50,6 +50,8 @@ class PlatformScraper:
                 "--no-sandbox",
                 "--disable-setuid-sandbox",
                 "--disable-dev-shm-usage",
+                "--disable-gpu",
+                "--single-process",
                 "--disable-blink-features=AutomationControlled",
                 "--disable-web-security",
                 "--disable-features=IsolateOrigins,site-per-process",
@@ -138,6 +140,7 @@ class PlatformScraper:
             browser = await pw.chromium.launch(
                 headless=True,
                 args=["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage",
+                       "--disable-gpu", "--single-process",
                        "--disable-blink-features=AutomationControlled"]
             )
             ua = random.choice(MOBILE_USER_AGENTS)
@@ -197,6 +200,7 @@ class PlatformScraper:
             browser = await pw.chromium.launch(
                 headless=True,
                 args=["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage",
+                       "--disable-gpu", "--single-process",
                        "--disable-blink-features=AutomationControlled"]
             )
             ctx = await browser.new_context(
