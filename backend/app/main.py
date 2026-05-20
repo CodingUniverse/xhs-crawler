@@ -34,7 +34,7 @@ app.include_router(accounts.router)
 app.include_router(tasks.router)
 app.include_router(content.router)
 app.include_router(xhs_auth.router)
-app.include_router(scrape.router, prefix="/api/scrape", tags=["scrape"])
+app.include_router(scrape.router, prefix="/scrape", tags=["scrape"])
 
 
 @app.get("/health")
