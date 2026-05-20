@@ -136,37 +136,27 @@ class PlatformScraper:
         logger.info(f"Resolving XHS short URL: {short_url}")
 
         try:
-            pw = await async_playwright().start()
-            browser = await pw.chromium.launch(
-                headless=True,
-                args=["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage",
-                       "--disable-gpu", "--single-process",
-                       "--disable-blink-features=AutomationControlled"]
-            )
-            ua = random.choice(MOBILE_USER_AGENTS)
-            ctx = await browser.new_context(
+            mobile_ua = random.choice(MOBILE_USER_AGENTS)
+            mobile_context = await self.browser.new_context(
                 viewport={"width": 390, "height": 844},
-                user_agent=ua,
+                user_agent=mobile_ua,
                 locale="zh-CN",
                 timezone_id="Asia/Shanghai",
             )
-
             for cookie in self.cookies:
                 try:
-                    await ctx.add_cookies([cookie])
+                    await mobile_context.add_cookies([cookie])
                 except:
                     pass
-
-            page = await ctx.new_page()
-
-            await page.goto(short_url, wait_until="domcontentloaded", timeout=30000)
+            page = await mobile_context.new_page()
+            await page.goto(short_url, wait_until="domcontentloaded", timeout=20000)
 
             resolved_url = page.url
-            for _ in range(15):
+            for _ in range(10):
                 if 'xiaohongshu.com/explore/' in page.url or 'xiaohongshu.com/discovery/item/' in page.url:
                     resolved_url = page.url
                     break
-                await asyncio.sleep(1)
+                await asyncio.sleep(0.5)
 
             logger.info(f"Resolved to: {resolved_url}")
 
@@ -182,10 +172,8 @@ class PlatformScraper:
             if 'xsec_source' in query_params:
                 result["xsec_source"] = query_params['xsec_source'][0]
 
-            await ctx.close()
-            await browser.close()
-            await pw.stop()
-
+            await page.close()
+            await mobile_context.close()
             return result if result.get("note_id") else None
 
         except Exception as e:
@@ -196,14 +184,7 @@ class PlatformScraper:
         api_url = f"https://edith.xiaohongshu.com/api/sns/h5/v1/note_info?note_id={note_id}"
 
         try:
-            pw = await async_playwright().start()
-            browser = await pw.chromium.launch(
-                headless=True,
-                args=["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage",
-                       "--disable-gpu", "--single-process",
-                       "--disable-blink-features=AutomationControlled"]
-            )
-            ctx = await browser.new_context(
+            ctx = await self.browser.new_context(
                 viewport={"width": 1280, "height": 720},
                 user_agent=random.choice(DESKTOP_USER_AGENTS),
                 locale="zh-CN",
@@ -224,19 +205,18 @@ class PlatformScraper:
                     try:
                         body = await response.json()
                         if body.get("success"):
-                            api_result["data"] = body.get("data", {})
-                            api_result["raw"] = body
+                                api_result["data"] = body.get("data", {})
+                                api_result["raw"] = body
                     except:
                         pass
 
             page.on("response", handle_response)
 
-            await page.goto(api_url, wait_until="domcontentloaded", timeout=30000)
-            await asyncio.sleep(2)
+            await page.goto(api_url, wait_until="domcontentloaded", timeout=15000)
+            await asyncio.sleep(1)
 
+            await page.close()
             await ctx.close()
-            await browser.close()
-            await pw.stop()
 
             if api_result.get("data"):
                 return api_result["data"]
@@ -278,8 +258,8 @@ class PlatformScraper:
 
         try:
             await self._random_sleep()
-            await self.page.goto(target_url, wait_until="networkidle", timeout=60000)
-            await asyncio.sleep(2)
+            await self.page.goto(target_url, wait_until="domcontentloaded", timeout=30000)
+            await asyncio.sleep(3)
 
             current_url = self.page.url
             logger.info(f"HTML page URL: {current_url}")
